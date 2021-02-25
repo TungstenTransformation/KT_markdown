@@ -6,4 +6,8 @@
     <TargetFramework>netcoreapp3.1</TargetFramework>
   </PropertyGroup>
 
+  <ItemGroup>
+    <Compile Remove="XDocument.vb" />
+  </ItemGroup>
+
 </Project>
