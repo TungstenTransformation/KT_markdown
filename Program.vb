@@ -21,6 +21,16 @@ Module Program
             For Each field As Xml.XmlNode In cl.SelectNodes("field")
                 out &= " * field: " & field.Attributes("name").InnerText & ":" & vbCrLf
             Next
+            For Each locator As Xml.XmlNode In cl.SelectNodes("locator")
+                out &= " * locator: " & locator.Attributes("name").InnerText & ":"
+                Try
+                    out &= locator.SelectSingleNode("extrname").InnerText
+                Catch ex As Exception
+
+                End Try
+                out &= vbCrLf
+            Next
+
             Dim script As String = cl.SelectSingleNode("script").InnerText
             If script <> "" Then out &= "script" & vbCrLf & "```vb" & vbCrLf & script & "```" & vbCrLf
         Next
