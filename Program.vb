@@ -19,7 +19,7 @@ Module Program
             If classname = "" Then classname = "project"
             out &= "# Class: " & classname & vbCrLf
             For Each field As Xml.XmlNode In cl.SelectNodes("field")
-                out &= " * " & field.Attributes("name").InnerText & ":" & vbCrLf
+                out &= " * field: " & field.Attributes("name").InnerText & ":" & vbCrLf
             Next
             Dim script As String = cl.SelectSingleNode("script").InnerText
             If script <> "" Then out &= "script" & vbCrLf & "```vb" & vbCrLf & script & "```" & vbCrLf
