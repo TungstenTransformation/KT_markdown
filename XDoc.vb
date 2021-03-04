@@ -32,25 +32,28 @@
     End Property
     Private ReadOnly Property Properties As String
         Get
-            Properties = ""
+            Properties = "## Formatters" & eol
             For Each dict As Xml.XmlNode In XML.SelectNodes("//dictionary")
                 Properties &= "* " & dict.Attributes("name").InnerText & eol
+            Next
+            For Each n As Xml.XmlNode In XML.SelectNodes("project/format")
+                Properties &= n.Attributes("type").InnerText & " : " & n.Attributes("type").InnerText & eol
             Next
             Dim Settings As Xml.XmlNode = XML.SelectSingleNode("/project/settings")
             Properties &= "Default Date   Formatter: " & Settings.Attributes("DefDate").InnerText & eol
             Properties &= "Default Amount Formatter: " & Settings.Attributes("DefAmnt").InnerText & eol
+            Properties &= "## Databases and Dictionaries" & eol
             For Each n As Xml.XmlNode In XML.SelectNodes("/project/dict")
                 Properties &= "Dictionary: " & n.Attributes("name").InnerText & eol
             Next
+            Properties &= "## Table Settings" & eol
             For Each n As Xml.XmlNode In XML.SelectNodes("project/glbcol")
                 Properties &= "Global Column: " & n.Attributes("gcid").InnerText & " : " & n.Attributes("dcolheaderlocalization").InnerText & eol
             Next
             For Each n As Xml.XmlNode In XML.SelectNodes("project/tablemod")
                 Properties &= "Table Model: " & n.Attributes("name").InnerText & eol
             Next
-            For Each n As Xml.XmlNode In XML.SelectNodes("project/format")
-                Properties &= n.Attributes("type").InnerText & " : " & n.Attributes("type").InnerText & eol
-            Next
+
             For Each n As Xml.XmlNode In XML.SelectNodes("RecogProfile")
                 Properties &= IIf(n.Attributes("Type").InnerText = "1", "page", "zonal") & " recognition profile : " &
                 n.Attributes("Name").InnerText & " : " & n.Attributes("Class").InnerText & eol
