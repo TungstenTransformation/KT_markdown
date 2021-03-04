@@ -40,8 +40,8 @@
                 Properties &= n.Attributes("type").InnerText & " : " & n.Attributes("type").InnerText & eol
             Next
             Dim Settings As Xml.XmlNode = XML.SelectSingleNode("/project/settings")
-            Properties &= "Default Date   Formatter: " & Settings.Attributes("DefDate").InnerText & eol
-            Properties &= "Default Amount Formatter: " & Settings.Attributes("DefAmnt").InnerText & eol
+            Properties &= "*Default Date   Formatter*: " & Settings.Attributes("DefDate").InnerText & eol
+            Properties &= "*Default Amount Formatter*: " & Settings.Attributes("DefAmnt").InnerText & eol
             Properties &= "## Databases and Dictionaries" & eol
             For Each n As Xml.XmlNode In XML.SelectNodes("/project/dict")
                 Properties &= "Dictionary: " & n.Attributes("name").InnerText & eol
