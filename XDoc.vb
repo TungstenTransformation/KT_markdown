@@ -12,6 +12,7 @@
     ReadOnly Property Markdown As String
         Get
             Markdown = "# KT Project auto documentation" & vbCrLf
+            Markdown &= "*created by [KT markdown](https://github.com/KofaxRPA/KT_markdown#kt_markdown)" & vbCrLf
             Markdown &= "project version= " & Attribute("/project", "version") & vbCrLf
             Markdown &= ClassTree
             Markdown &= Scripts
@@ -42,13 +43,17 @@
             Dim Settings As Xml.XmlNode = XML.SelectSingleNode("/project/settings")
             Properties &= "*Default Date   Formatter*: " & Settings.Attributes("DefDate").InnerText & eol
             Properties &= "*Default Amount Formatter*: " & Settings.Attributes("DefAmnt").InnerText & eol
-            Properties &= "## Databases and Dictionaries" & eol
+            Properties &= "## Databases" & eol
+            For Each n As Xml.XmlNode In XML.SelectNodes("/project/database")
+                Properties &= "Database: " & n.Attributes("name").InnerText & eol
+            Next
+            Properties &= "## Dictionaries" & eol
             For Each n As Xml.XmlNode In XML.SelectNodes("/project/dict")
                 Properties &= "Dictionary: " & n.Attributes("name").InnerText & eol
             Next
             Properties &= "## Table Settings" & eol
             For Each n As Xml.XmlNode In XML.SelectNodes("project/glbcol")
-                Properties &= "Global Column: " & n.Attributes("gcid").InnerText & " : " & n.Attributes("dcolheaderlocalization").InnerText & eol
+                Properties &= "Global Column " & n.Attributes("gcid").InnerText & " : " & n.Attributes("dcolheaderlocalization").InnerText & eol
             Next
             For Each n As Xml.XmlNode In XML.SelectNodes("project/tablemod")
                 Properties &= "Table Model: " & n.Attributes("name").InnerText & eol
