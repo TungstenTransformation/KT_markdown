@@ -77,11 +77,8 @@
                 Next
                 For Each locator As Xml.XmlNode In cl.SelectNodes("locator")
                     ClassTree &= " * locator: " & locator.Attributes("name").InnerText & ":"
-                    Try
-                        ClassTree &= locator.SelectSingleNode("extrname").InnerText
-                    Catch ex As Exception
-
-                    End Try
+                    Dim extrname As Xml.XmlNode = locator.SelectSingleNode("extrname")
+                    If extrname IsNot Nothing Then ClassTree &= locator.SelectSingleNode("extrname").InnerText
                     ClassTree &= vbCrLf
                 Next
 
