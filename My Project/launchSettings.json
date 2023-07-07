@@ -2,7 +2,8 @@
   "profiles": {
     "KT_markdown": {
       "commandName": "Project",
-      "commandLineArgs": "\"C:\\Users\\david.wright\\Documents\\Kofax\\SE\\project\\20210216 Bofa EoB\\git\\BofA_EoB\\EoB.fpr\""
+      "commandLineArgs": "\"C:\\temp\\ocr\\ocr.fpr\"",
+      "workingDirectory": "c:\\temp\\ocr"
     }
   }
 }
