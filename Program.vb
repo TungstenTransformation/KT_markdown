@@ -10,6 +10,8 @@ Module Program
             Exit Sub
         End If
         Dim xdoc As New XDoc(fprFilename)
-        System.Console.Write(xdoc.Markdown)
+        Dim MarkDown As String
+        MarkDown = xdoc.Markdown
+        System.Console.Write(MarkDown)
     End Sub
 End Module
