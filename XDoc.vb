@@ -42,13 +42,28 @@
             For Each n As Xml.XmlNode In XML.SelectNodes("project/tablemod")
                 ProjectProperties &= "Table Model: " & n.Attributes("name").InnerText & eol
             Next
-            ProjectProperties &= "## Recognition Profiles" & eol
+            ProjectProperties &= "## Recognition Profiles" & eol & RecogProfiles() & eol
+        End Get
+    End Property
+
+    Private ReadOnly Property RecogProfiles() As String
+        Get
+            Dim Profiles As Xml.XmlNode = XML.SelectSingleNode("/project/RecogProfiles")
+            Dim DefOMR As String = Profiles.Attributes("DefZrOmr").InnerText
+            Dim DefOCR As String = Profiles.Attributes("DefZrOcr").InnerText
+            Dim DefPage As String = Profiles.Attributes("DefZrPr").InnerText
+            RecogProfiles = ""
             For Each n As Xml.XmlNode In XML.SelectNodes("//RecogProfile")
-                ProjectProperties &= IIf(n.Attributes("Type").InnerText = "1", "page", "zonal") & " recognition profile : " &
-                n.Attributes("Name").InnerText & " : " & n.Attributes("Class").InnerText & eol
+                RecogProfiles &= IIf(n.Attributes("Type").InnerText = "1", "page", "zonal") & " recognition profile : " & n.Attributes("Name").InnerText
+                Dim GUID As String = n.Attributes("guid").InnerText
+                If GUID = DefOMR Or GUID = DefOCR Or GUID = DefPage Then RecogProfiles &= "*"
+                RecogProfiles &= eol
             Next
         End Get
     End Property
+
+
+
     Private ReadOnly Property Fields(cl As Xml.XmlNode) As String
         Get
             Fields = "## Fields" & vbCrLf

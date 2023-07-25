@@ -2,7 +2,7 @@
   "profiles": {
     "KT_markdown": {
       "commandName": "Project",
-      "commandLineArgs": "\"C:\\temp\\ocr\\ocr.fpr\"",
+      "commandLineArgs": "\"C:\\Users\\david.wright\\OneDrive - Kofax, Inc\\Sales Enablement\\project\\MicrosoftOCR\\MicrosoftOCR.fpr\"",
       "workingDirectory": "c:\\temp\\ocr"
     }
   }
