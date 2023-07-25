@@ -9,80 +9,134 @@
         Return XML.SelectSingleNode(xpath).Attributes(att).InnerText
     End Function
 
-    ReadOnly Property Markdown As String
+    Private ReadOnly Property Script(cl As Xml.XmlNode) As String
         Get
-            Markdown = "# KT Project auto documentation" & vbCrLf
-            Markdown &= "*created by [KT markdown](https://github.com/KofaxRPA/KT_markdown#kt_markdown)" & vbCrLf
-            Markdown &= "project version= " & Attribute("/project", "version") & vbCrLf
-            Markdown &= ClassTree
-            Markdown &= Scripts
-            Markdown &= Properties
+            Script = cl.InnerText
+            Return "## Script" & eol & "```vb" & vbCrLf & Script & "```" & eol
         End Get
     End Property
-    Private ReadOnly Property Scripts As String
+    Private ReadOnly Property ProjectProperties As String
         Get
-            Scripts = ""
-            'project level script
-            Dim script As String = XML.SelectSingleNode("/project/script").InnerText
-            If script <> "" Then Scripts &= "## Project Level Script" & vbCrLf & "```vb" & vbCrLf & script & "```" & vbCrLf
-            For Each cl As Xml.XmlNode In XML.SelectNodes("//class")
-                script = cl.SelectSingleNode("script").InnerText
-                If script <> "" Then Scripts &= "## Script for class '" & cl.Attributes("name").InnerText & "'" & vbCrLf & "```vb" & vbCrLf & script & "```" & vbCrLf
-            Next
-        End Get
-    End Property
-    Private ReadOnly Property Properties As String
-        Get
-            Properties = "## Formatters" & eol
+            ProjectProperties = "## Formatters" & eol
             For Each dict As Xml.XmlNode In XML.SelectNodes("//dictionary")
-                Properties &= "* " & dict.Attributes("name").InnerText & eol
+                ProjectProperties &= "* " & dict.Attributes("name").InnerText & eol
             Next
             For Each n As Xml.XmlNode In XML.SelectNodes("project/format")
-                Properties &= n.Attributes("type").InnerText & " : " & n.Attributes("type").InnerText & eol
+                ProjectProperties &= "* **" & n.Attributes("name").InnerText & "** *" & n.Attributes("type").InnerText & "*" & eol
             Next
             Dim Settings As Xml.XmlNode = XML.SelectSingleNode("/project/settings")
-            Properties &= "*Default Date   Formatter*: " & Settings.Attributes("DefDate").InnerText & eol
-            Properties &= "*Default Amount Formatter*: " & Settings.Attributes("DefAmnt").InnerText & eol
-            Properties &= "## Databases" & eol
+            ProjectProperties &= "*Default Date   Formatter*: " & Settings.Attributes("DefDate").InnerText & eol
+            ProjectProperties &= "*Default Amount Formatter*: " & Settings.Attributes("DefAmnt").InnerText & eol
+            ProjectProperties &= "## Databases" & eol
             For Each n As Xml.XmlNode In XML.SelectNodes("/project/database")
-                Properties &= "Database: " & n.Attributes("name").InnerText & eol
+                ProjectProperties &= "Database: " & n.Attributes("name").InnerText & eol
             Next
-            Properties &= "## Dictionaries" & eol
+            ProjectProperties &= "## Dictionaries" & eol
             For Each n As Xml.XmlNode In XML.SelectNodes("/project/dict")
-                Properties &= "Dictionary: " & n.Attributes("name").InnerText & eol
+                ProjectProperties &= "Dictionary: " & n.Attributes("name").InnerText & eol
             Next
-            Properties &= "## Table Settings" & eol
+            ProjectProperties &= "## Table Settings" & eol
             For Each n As Xml.XmlNode In XML.SelectNodes("project/glbcol")
-                Properties &= "Global Column " & n.Attributes("gcid").InnerText & " : " & n.Attributes("dcolheaderlocalization").InnerText & eol
+                ProjectProperties &= "Global Column " & n.Attributes("gcid").InnerText & " : " & n.Attributes("dcolheaderlocalization").InnerText & eol
             Next
             For Each n As Xml.XmlNode In XML.SelectNodes("project/tablemod")
-                Properties &= "Table Model: " & n.Attributes("name").InnerText & eol
+                ProjectProperties &= "Table Model: " & n.Attributes("name").InnerText & eol
             Next
 
             For Each n As Xml.XmlNode In XML.SelectNodes("RecogProfile")
-                Properties &= IIf(n.Attributes("Type").InnerText = "1", "page", "zonal") & " recognition profile : " &
+                ProjectProperties &= IIf(n.Attributes("Type").InnerText = "1", "page", "zonal") & " recognition profile : " &
                 n.Attributes("Name").InnerText & " : " & n.Attributes("Class").InnerText & eol
             Next
         End Get
     End Property
-    Private ReadOnly Property ClassTree As String
+    Private ReadOnly Property Fields(cl As Xml.XmlNode) As String
         Get
-            ClassTree = ""
-            For Each cl As Xml.XmlNode In XML.SelectNodes("//class")
-                Dim classname As String = cl.Attributes("name").InnerText
-                If classname = "" Then classname = "project"
-                ClassTree &= "# Class: " & classname & vbCrLf
-                For Each field As Xml.XmlNode In cl.SelectNodes("field")
-                    ClassTree &= " * field: " & field.Attributes("name").InnerText & ":" & vbCrLf
-                Next
-                For Each locator As Xml.XmlNode In cl.SelectNodes("locator")
-                    ClassTree &= " * locator: " & locator.Attributes("name").InnerText & ":"
-                    Dim extrname As Xml.XmlNode = locator.SelectSingleNode("extrname")
-                    If extrname IsNot Nothing Then ClassTree &= locator.SelectSingleNode("extrname").InnerText
-                    ClassTree &= vbCrLf
-                Next
-
+            Fields = "## Fields" & vbCrLf
+            For Each f As Xml.XmlNode In cl.SelectNodes("field")
+                Fields &= Field(f)
             Next
+        End Get
+    End Property
+    Private ReadOnly Property Field(f As Xml.XmlNode) As String
+        Get
+            Field = "* " & f.Attributes("name").InnerText
+            Dim loc As String = f.Attributes("locator").InnerText
+            If loc <> "" Then Field &= String.Format(" *{0}*", loc)
+            Dim sf As String = f.Attributes("locsubf").InnerText
+            If sf <> "" Then Field &= String.Format(":*{0}*", sf)
+            Field &= eol
+        End Get
+    End Property
+
+    Private ReadOnly Property Locators(cl As Xml.XmlNode) As String
+        Get
+            Locators = "## Locators" & vbCrLf
+            For Each loc As Xml.XmlNode In cl.SelectNodes("locator")
+                Locators &= "* " & Locator(loc) & eol
+            Next
+        End Get
+    End Property
+
+    Private ReadOnly Property Locator(loc As Xml.XmlNode) As String
+        Get
+            Locator = "**" & loc.Attributes("name").InnerText & "** "
+            Dim locType As String = ""
+            Dim extrname As Xml.XmlNode = loc.SelectSingleNode("extrname")
+            If extrname IsNot Nothing Then
+                locType = loc.SelectSingleNode("extrname").InnerText
+            ElseIf loc.Attributes IsNot Nothing AndAlso loc.Attributes("script") IsNot Nothing Then
+                If loc.Attributes("script").InnerText = "1" Then locType = "Script Locator [[Script](#Script)]"
+            End If
+            Locator &= "*" & locType & "*" & eol
+            Dim subfieldcount As Long = Long.Parse(loc.Attributes("sfcount").InnerText)
+            If subfieldcount > 0 Then
+                For sf = 0 To subfieldcount - 1
+                    Locator &= "  * " & loc.Attributes("sbfld" & sf.ToString).InnerText & eol
+                Next
+            End If
+        End Get
+    End Property
+
+    Public Iterator Function Classes() As System.Collections.IEnumerable
+        'Yield XML.SelectSingleNode("/project")
+        For Each cl As Xml.XmlNode In XML.SelectNodes("//class")
+            Yield cl
+        Next
+    End Function
+
+    Public ReadOnly Property MarkDown(cl As Xml.XmlNode) As String
+        Get
+            Dim Labels As String = "Fields Locators Script"
+            Const ProjectLabels As String = "Fields Locators Formatters Databases Dictionaries Tables Script"
+            MarkDown = ""
+            If IsProjectClass(cl) Then
+                MarkDown = "# Kofax Transformation Auto-documentation" & vbCrLf
+                MarkDown &= "*created by [KT markdown](https://github.com/KofaxRTransformation/KT_markdown#kt_markdown)*  " & vbCrLf
+                MarkDown &= "project version= " & Attribute("/project", "version") & vbCrLf
+            End If
+            MarkDown &= "# Class: " & ClassName(cl) & vbCrLf
+            If IsProjectClass(cl) Then Labels = ProjectLabels
+            For Each label As String In Split(Labels)
+                MarkDown &= String.Format("[[{0}](#{0})] ", label)
+            Next
+            MarkDown &= eol
+            MarkDown &= Fields(cl)
+            MarkDown &= Locators(cl)
+            If IsProjectClass(cl) Then MarkDown &= ProjectProperties
+            MarkDown &= Script(cl)
+        End Get
+    End Property
+    Public ReadOnly Property IsProjectClass(cl As Xml.XmlNode) As Boolean
+        Get
+            Return ClassName(cl) = "Project"
+        End Get
+    End Property
+
+    Public ReadOnly Property ClassName(cl As Xml.XmlNode) As String
+        Get
+            ClassName = cl.Attributes("name").InnerText
+            If ClassName = "" Then ClassName = "Project"
+            Return ClassName
         End Get
     End Property
 End Class
