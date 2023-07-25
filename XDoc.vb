@@ -103,7 +103,7 @@
             Dim confidence As String = Percent(Attribute(f, "conf", "0.80"))
             Dim distance As String = Percent(Attribute(f, "dist", "0.10"))
             Dim confidencecpy As String = Percent(Attribute(f, "confcpy", "0.10"))
-            Field = String.Format("|{0}|{1}|{2}|{3}|{4}|{5}|{6}|{7}|" & eol, groupName, name, loc, sf, formatter, confidence, distance, confidencecpy)
+            Field = String.Format("|{0}|{1}|{2}|{3}|{4}|{5}|{6}|{7}|" & eol, groupName, name, loc, sf, formatter, confidencecpy, confidence, distance)
         End Get
     End Property
 
