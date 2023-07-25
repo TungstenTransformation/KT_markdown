@@ -1,9 +1,11 @@
 ﻿Public Class XDoc
     Private ReadOnly XML As Xml.XmlDocument
     Const eol = "  " & vbCrLf
-    Sub New(filename As String)
+    Private FileName As String
+    Sub New(FileName As String)
         Dim gz As New gzip
-        XML = gz.gzip2xml(filename)
+        XML = gz.gzip2xml(FileName)
+        Me.FileName = FileName
     End Sub
     Private Function Attribute(xpath As String, att As String) As String
         Return XML.SelectSingleNode(xpath).Attributes(att).InnerText
@@ -15,6 +17,7 @@
             Return "## Script" & eol & "```vb" & vbCrLf & Script & "```" & eol
         End Get
     End Property
+
     Private ReadOnly Property ProjectProperties As String
         Get
             ProjectProperties = "## Formatters" & eol
@@ -43,6 +46,7 @@
                 ProjectProperties &= "Table Model: " & n.Attributes("name").InnerText & eol
             Next
             ProjectProperties &= "## Recognition Profiles" & eol & RecogProfiles() & eol
+            ProjectProperties &= "## Script Variables" & eol & ScriptVariables() & eol
         End Get
     End Property
 
@@ -51,7 +55,7 @@
             Dim Profiles As Xml.XmlNode = XML.SelectSingleNode("/project/RecogProfiles")
             Dim DefOMR As String = Profiles.Attributes("DefZrOmr").InnerText
             Dim DefOCR As String = Profiles.Attributes("DefZrOcr").InnerText
-            Dim DefPage As String = Profiles.Attributes("DefZrPr").InnerText
+            Dim DefPage As String = Profiles.Attributes("DefPr").InnerText
             RecogProfiles = ""
             For Each n As Xml.XmlNode In XML.SelectNodes("//RecogProfile")
                 RecogProfiles &= IIf(n.Attributes("Type").InnerText = "1", "page", "zonal") & " recognition profile : " & n.Attributes("Name").InnerText
@@ -62,7 +66,21 @@
         End Get
     End Property
 
-
+    Private ReadOnly Property ScriptVariables() As String
+        Get
+            ScriptVariables = ""
+            Dim vars As New Xml.XmlDocument
+            vars.Load(FileName.Replace(".fpr", "_ScriptVariables.xml"))
+            For Each var As Xml.XmlNode In vars.SelectNodes("//var")
+                Dim key As String = var.Attributes("key").InnerText
+                Dim value As String = var.Attributes("value").InnerText
+                If key.ToLower.Contains("key") Or key.ToLower.Contains("token") Then
+                    value = "*****"  'obscure sensitive data
+                End If
+                ScriptVariables &= String.Format("* **{0}** : {1}" & eol, key, value)
+            Next
+        End Get
+    End Property
 
     Private ReadOnly Property Fields(cl As Xml.XmlNode) As String
         Get
@@ -125,7 +143,7 @@
     Public ReadOnly Property MarkDown(cl As Xml.XmlNode) As String
         Get
             Dim Labels As String = "Fields Locators Script"
-            Const ProjectLabels As String = "Fields Locators Formatters Databases Dictionaries Tables Recognition-Profiles Script"
+            Const ProjectLabels As String = "Fields Locators Formatters Databases Dictionaries Tables Recognition-Profiles Script-Variables Script"
             MarkDown = ""
             If IsProjectClass(cl) Then
                 MarkDown = "# Kofax Transformation Auto-documentation" & vbCrLf
