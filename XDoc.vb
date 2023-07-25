@@ -86,11 +86,17 @@
 
     Private ReadOnly Property Fields(cl As Xml.XmlNode) As String
         Get
-            Fields = "|Group| Field | Locator | SubField | Formatter | Copy Conf|Valid Conf|Min Distance|" & eol
-            Fields &= "|----|-------|---------|----------|-----------|----------|----------|------------|" & eol
+            Dim MD As String = ""
             For Each f As Xml.XmlNode In cl.SelectNodes("field")
-                Fields &= Field(f)
+                MD &= Field(f)
             Next
+            If MD = "" Then
+                Return ""
+            Else
+                Fields = "|Group| Field | Locator | SubField | Formatter | Copy Conf|Valid Conf|Min Distance|" & eol
+                Fields &= "|----|-------|---------|----------|-----------|----------|----------|------------|" & eol
+                Fields &= MD
+            End If
         End Get
     End Property
     Private ReadOnly Property Field(f As Xml.XmlNode) As String
