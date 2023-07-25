@@ -7,8 +7,10 @@
         XML = gz.gzip2xml(FileName)
         Me.FileName = FileName
     End Sub
-    Private Function Attribute(xpath As String, att As String) As String
-        Return XML.SelectSingleNode(xpath).Attributes(att).InnerText
+    Private Function Attribute(Node As Xml.XmlNode, att As String, DefaultValue As String) As String
+        'return "" if missing attribute. XDOC has missing attributes if empty or not default
+        Dim A As Xml.XmlAttribute = Node.Attributes(att)
+        If A Is Nothing Then Return DefaultValue Else Return A.InnerText
     End Function
 
     Private ReadOnly Property Script(cl As Xml.XmlNode) As String
@@ -84,7 +86,8 @@
 
     Private ReadOnly Property Fields(cl As Xml.XmlNode) As String
         Get
-            Fields = "## Fields" & vbCrLf
+            Fields = "|Group| Field | Locator | SubField | Formatter | Copy Conf|Valid Conf|Min Distance|" & eol
+            Fields &= "|----|-------|---------|----------|-----------|----------|----------|------------|" & eol
             For Each f As Xml.XmlNode In cl.SelectNodes("field")
                 Fields &= Field(f)
             Next
@@ -92,14 +95,21 @@
     End Property
     Private ReadOnly Property Field(f As Xml.XmlNode) As String
         Get
-            Field = "* " & f.Attributes("name").InnerText
+            Dim groupName As String = f.Attributes("gname").InnerText
+            Dim name As String = f.Attributes("name").InnerText
             Dim loc As String = f.Attributes("locator").InnerText
-            If loc <> "" Then Field &= String.Format("←*{0}*", loc)
             Dim sf As String = f.Attributes("locsubf").InnerText
-            If sf <> "" Then Field &= String.Format(":*{0}*", sf)
-            Field &= eol
+            Dim formatter As String = f.Attributes("fldfrmt").InnerText
+            Dim confidence As String = Percent(Attribute(f, "conf", "0.80"))
+            Dim distance As String = Percent(Attribute(f, "dist", "0.10"))
+            Dim confidencecpy As String = Percent(Attribute(f, "confcpy", "0.10"))
+            Field = String.Format("|{0}|{1}|{2}|{3}|{4}|{5}|{6}|{7}|" & eol, groupName, name, loc, sf, formatter, confidence, distance, confidencecpy)
         End Get
     End Property
+
+    Private Function Percent(p As String) As String
+        Return FormatPercent(Double.Parse(p), 0)
+    End Function
 
     Private ReadOnly Property Locators(cl As Xml.XmlNode) As String
         Get
@@ -148,7 +158,7 @@
             If IsProjectClass(cl) Then
                 MarkDown = "# Kofax Transformation Auto-documentation" & vbCrLf
                 MarkDown &= "*created by [KT markdown](https://github.com/KofaxRTransformation/KT_markdown#kt_markdown)*  " & vbCrLf
-                MarkDown &= "project version= " & Attribute("/project", "version") & vbCrLf
+                MarkDown &= "project version= " & XML.SelectSingleNode("/project").Attributes("version").InnerText & vbCrLf
             End If
             MarkDown &= "# Class: " & ClassName(cl) & vbCrLf
             If IsProjectClass(cl) Then Labels = ProjectLabels
