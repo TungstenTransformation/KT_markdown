@@ -94,7 +94,7 @@
         Get
             Field = "* " & f.Attributes("name").InnerText
             Dim loc As String = f.Attributes("locator").InnerText
-            If loc <> "" Then Field &= String.Format(" *{0}*", loc)
+            If loc <> "" Then Field &= String.Format("←*{0}*", loc)
             Dim sf As String = f.Attributes("locsubf").InnerText
             If sf <> "" Then Field &= String.Format(":*{0}*", sf)
             Field &= eol
