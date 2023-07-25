@@ -42,8 +42,8 @@
             For Each n As Xml.XmlNode In XML.SelectNodes("project/tablemod")
                 ProjectProperties &= "Table Model: " & n.Attributes("name").InnerText & eol
             Next
-
-            For Each n As Xml.XmlNode In XML.SelectNodes("RecogProfile")
+            ProjectProperties &= "## Recognition Profiles" & eol
+            For Each n As Xml.XmlNode In XML.SelectNodes("//RecogProfile")
                 ProjectProperties &= IIf(n.Attributes("Type").InnerText = "1", "page", "zonal") & " recognition profile : " &
                 n.Attributes("Name").InnerText & " : " & n.Attributes("Class").InnerText & eol
             Next
@@ -110,7 +110,7 @@
     Public ReadOnly Property MarkDown(cl As Xml.XmlNode) As String
         Get
             Dim Labels As String = "Fields Locators Script"
-            Const ProjectLabels As String = "Fields Locators Formatters Databases Dictionaries Tables Script"
+            Const ProjectLabels As String = "Fields Locators Formatters Databases Dictionaries Tables Recognition-Profiles Script"
             MarkDown = ""
             If IsProjectClass(cl) Then
                 MarkDown = "# Kofax Transformation Auto-documentation" & vbCrLf
@@ -120,7 +120,7 @@
             MarkDown &= "# Class: " & ClassName(cl) & vbCrLf
             If IsProjectClass(cl) Then Labels = ProjectLabels
             For Each label As String In Split(Labels)
-                MarkDown &= String.Format("[[{0}](#{0})] ", label)
+                MarkDown &= String.Format("[[{0}](#{1})] ", label.Replace("-", " "), label)
             Next
             MarkDown &= eol
             MarkDown &= Fields(cl)
