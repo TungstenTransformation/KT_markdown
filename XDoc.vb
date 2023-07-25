@@ -88,11 +88,14 @@
                 If loc.Attributes("script").InnerText = "1" Then locType = "Script Locator [[Script](#Script)]"
             End If
             Locator &= "*" & locType & "*" & eol
-            Dim subfieldcount As Long = Long.Parse(loc.Attributes("sfcount").InnerText)
-            If subfieldcount > 0 Then
-                For sf = 0 To subfieldcount - 1
-                    Locator &= "  * " & loc.Attributes("sbfld" & sf.ToString).InnerText & eol
-                Next
+            If loc.Attributes("sfcount") IsNot Nothing Then
+                Dim subfieldcount As Long = Long.Parse(loc.Attributes("sfcount").InnerText)
+                If subfieldcount > 0 Then
+                    For sf = 0 To subfieldcount - 1
+                        Locator &= "  * " & loc.Attributes("sbfld" & sf.ToString).InnerText & eol
+                    Next
+                End If
+
             End If
         End Get
     End Property
