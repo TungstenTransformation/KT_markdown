@@ -29,7 +29,7 @@ Both parameters are optional. It works out what you mean.
 * write scripts to separate .vb files.
 * delete old files if class name changes.
 * only update files if file changed. This preserves useful "Date Modified" on files in File System.
-* highlight default OCR profiles with *.
+* highlight default OCR profiles and Formatters with *.
 * Show field info in a table including thresholds.
 ## 1.0.1 (25 July 2023) 
 * writes a .md for each class.

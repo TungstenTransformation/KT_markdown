@@ -25,12 +25,16 @@
             For Each dict As Xml.XmlNode In XML.SelectNodes("//dictionary")
                 ProjectProperties &= "* " & dict.Attributes("name").InnerText & eol
             Next
-            For Each n As Xml.XmlNode In XML.SelectNodes("project/format")
-                ProjectProperties &= "* **" & n.Attributes("name").InnerText & "** *" & n.Attributes("type").InnerText & "*" & eol
-            Next
             Dim Settings As Xml.XmlNode = XML.SelectSingleNode("/project/settings")
-            ProjectProperties &= "*Default Date   Formatter*: " & Settings.Attributes("DefDate").InnerText & eol
-            ProjectProperties &= "*Default Amount Formatter*: " & Settings.Attributes("DefAmnt").InnerText & eol
+            Dim DDF As String = Settings.Attributes("DefDate").InnerText
+            Dim DAF As String = Settings.Attributes("DefAmnt").InnerText
+            For Each n As Xml.XmlNode In XML.SelectNodes("project/format")
+                Dim IsDefault As String = ""
+                Dim Formatter As String = n.Attributes("name").InnerText
+                If Formatter = DDF Or Formatter = DAF Then IsDefault = "*"
+                Dim FormatterType As String = n.Attributes("type").InnerText
+                ProjectProperties &= String.Format("* **{0}** *{1}*{2}" & eol, Formatter, FormatterType, IsDefault)
+            Next
             ProjectProperties &= "## Databases" & eol
             For Each n As Xml.XmlNode In XML.SelectNodes("/project/database")
                 ProjectProperties &= "Database: " & n.Attributes("name").InnerText & eol
