@@ -13,10 +13,9 @@
         If A Is Nothing Then Return DefaultValue Else Return A.InnerText
     End Function
 
-    Private ReadOnly Property Script(cl As Xml.XmlNode) As String
+    Public ReadOnly Property Script(cl As Xml.XmlNode) As String
         Get
-            Script = cl.InnerText
-            Return "## Script" & eol & "```vb" & vbCrLf & Script & "```" & eol
+            Return cl.SelectSingleNode("script").InnerText
         End Get
     End Property
 
@@ -158,8 +157,8 @@
 
     Public ReadOnly Property MarkDown(cl As Xml.XmlNode) As String
         Get
-            Dim Labels As String = "Fields Locators Script"
-            Const ProjectLabels As String = "Fields Locators Formatters Databases Dictionaries Tables Recognition-Profiles Script-Variables Script"
+            Dim Labels As String = "Fields Locators"
+            Const ProjectLabels As String = "Fields Locators Formatters Databases Dictionaries Tables Recognition-Profiles Script-Variables"
             MarkDown = ""
             If IsProjectClass(cl) Then
                 MarkDown = "# Kofax Transformation Auto-documentation" & vbCrLf
@@ -171,11 +170,10 @@
             For Each label As String In Split(Labels)
                 MarkDown &= String.Format("[[{0}](#{1})] ", label.Replace("-", " "), label)
             Next
-            MarkDown &= eol
+            MarkDown &= String.Format(" [[Script]({0}.vb)]" & eol, ClassName(cl))
             MarkDown &= Fields(cl)
             MarkDown &= Locators(cl)
             If IsProjectClass(cl) Then MarkDown &= ProjectProperties
-            MarkDown &= Script(cl)
         End Get
     End Property
     Public ReadOnly Property IsProjectClass(cl As Xml.XmlNode) As Boolean
