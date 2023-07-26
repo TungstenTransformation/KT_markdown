@@ -144,7 +144,7 @@
                 Dim subfieldcount As Long = Long.Parse(loc.Attributes("sfcount").InnerText)
                 If subfieldcount > 0 Then
                     For sf = 0 To subfieldcount - 1
-                        Locator &= "  * " & loc.Attributes("sbfld" & sf.ToString).InnerText & eol
+                        Locator &= "    * " & loc.Attributes("sbfld" & sf.ToString).InnerText & eol
                     Next
                 End If
 
