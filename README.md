@@ -1,13 +1,15 @@
-# Kofax Transformation Markdown
+# Kofax Transformation Automatic Documentation
  
 This converts a Kofax Transformation Project file into a human readable and machine-diffable markdown file.  
 Each class is written to its own markdown file in the subfolder *md* of the project folder.  
-Useful for storing in github and seeing script and config changes.
+Useful for storing in GitHub and seeing script and config changes.  
 Supports
 * class structure, fields, tables, locator names
 * formatters, validation rules, dictionary and database names  
-not included
+
+not included  
 *internal config settings of locators, formatters, validation rules.  
+
 Compatible with KTM, KTA and RPA.  
 
 ## Installation
@@ -20,9 +22,9 @@ Compatible with KTM, KTA and RPA.
 ## Advanced Features
 * At commandline type **KT_markdown.exe [fpr_filename] [outputfoldername]**
 ```batch
-KT_markdown.exe c:\temp\ktproject\ktproject.fpr
+KT_markdown.exe c:\temp\ktproject\
 ```
-Both parameters are optional.  
+Both parameters are optional. It works out what you mean.  
 ## 1.0.2 (26 July 2023)
 * write scripts to separate .vb files.
 * delete old files if class name changes.
