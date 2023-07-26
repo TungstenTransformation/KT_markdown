@@ -7,8 +7,8 @@ Supports
 * class structure, fields, tables, locator names
 * formatters, validation rules, dictionary and database names  
 
-not included  
-*internal config settings of locators, formatters, validation rules.  
+not included yet 
+* properties of locators, formatters, validation rules, databases and dictionaries.  
 
 Compatible with KTM, KTA and RPA.  
 
