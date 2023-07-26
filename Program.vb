@@ -6,6 +6,8 @@ Module Program
     Private HelpText As String = "\nKT_Markdown.exe [fprFileName] [subfolderName]\n If [fprFileName] is missing then look in current folder.\n If [subFolderName] is missing then output to folder 'md'."
     Sub Main(args As String())
         Dim fprFilename As String = ""
+        Console.WriteLine("Kofax Transformation Markdown Version 1.0.3")
+        Console.WriteLine("https://github.com/KofaxTransformation/KT_Markdown")
         Dim Dir As New DirectoryInfo(System.IO.Path.GetDirectoryName(Reflection.Assembly.GetEntryAssembly().Location))
         If args.Length > 1 Then 'both fpr and folder given
             fprFilename = args(0)
