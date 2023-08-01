@@ -25,6 +25,9 @@ Compatible with KTM, KTA and RPA.
 KT_markdown.exe c:\temp\ktproject\
 ```
 Both parameters are optional. It works out what you mean.  
+## 1.0.3 (1 Aug 2023)
+* Fixed project scripts.
+* improved console logging.
 ## 1.0.2 (26 July 2023)
 * write scripts to separate .vb files.
 * delete old files if class name changes.

@@ -15,6 +15,7 @@
 
     Public ReadOnly Property Script(cl As Xml.XmlNode) As String
         Get
+            If ClassName(cl) = "Project" Then Return XML.SelectSingleNode("project/script").InnerText
             Return cl.SelectSingleNode("script").InnerText
         End Get
     End Property
