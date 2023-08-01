@@ -1,32 +1,41 @@
 ﻿Public Class XDoc
     Private ReadOnly XML As Xml.XmlDocument
     Const eol = "  " & vbCrLf
-    Sub New(filename As String)
+    Private FileName As String
+    Sub New(FileName As String)
         Dim gz As New gzip
-        XML = gz.gzip2xml(filename)
+        XML = gz.gzip2xml(FileName)
+        Me.FileName = FileName
     End Sub
-    Private Function Attribute(xpath As String, att As String) As String
-        Return XML.SelectSingleNode(xpath).Attributes(att).InnerText
+    Private Function Attribute(Node As Xml.XmlNode, att As String, DefaultValue As String) As String
+        'return "" if missing attribute. XDOC has missing attributes if empty or not default
+        Dim A As Xml.XmlAttribute = Node.Attributes(att)
+        If A Is Nothing Then Return DefaultValue Else Return A.InnerText
     End Function
 
-    Private ReadOnly Property Script(cl As Xml.XmlNode) As String
+    Public ReadOnly Property Script(cl As Xml.XmlNode) As String
         Get
-            Script = cl.InnerText
-            Return "## Script" & eol & "```vb" & vbCrLf & Script & "```" & eol
+            If ClassName(cl) = "Project" Then Return XML.SelectSingleNode("project/script").InnerText
+            Return cl.SelectSingleNode("script").InnerText
         End Get
     End Property
+
     Private ReadOnly Property ProjectProperties As String
         Get
             ProjectProperties = "## Formatters" & eol
             For Each dict As Xml.XmlNode In XML.SelectNodes("//dictionary")
                 ProjectProperties &= "* " & dict.Attributes("name").InnerText & eol
             Next
-            For Each n As Xml.XmlNode In XML.SelectNodes("project/format")
-                ProjectProperties &= "* **" & n.Attributes("name").InnerText & "** *" & n.Attributes("type").InnerText & "*" & eol
-            Next
             Dim Settings As Xml.XmlNode = XML.SelectSingleNode("/project/settings")
-            ProjectProperties &= "*Default Date   Formatter*: " & Settings.Attributes("DefDate").InnerText & eol
-            ProjectProperties &= "*Default Amount Formatter*: " & Settings.Attributes("DefAmnt").InnerText & eol
+            Dim DDF As String = Settings.Attributes("DefDate").InnerText
+            Dim DAF As String = Settings.Attributes("DefAmnt").InnerText
+            For Each n As Xml.XmlNode In XML.SelectNodes("project/format")
+                Dim IsDefault As String = ""
+                Dim Formatter As String = n.Attributes("name").InnerText
+                If Formatter = DDF Or Formatter = DAF Then IsDefault = "*"
+                Dim FormatterType As String = n.Attributes("type").InnerText
+                ProjectProperties &= String.Format("* **{0}** *{1}*{2}" & eol, Formatter, FormatterType, IsDefault)
+            Next
             ProjectProperties &= "## Databases" & eol
             For Each n As Xml.XmlNode In XML.SelectNodes("/project/database")
                 ProjectProperties &= "Database: " & n.Attributes("name").InnerText & eol
@@ -42,31 +51,75 @@
             For Each n As Xml.XmlNode In XML.SelectNodes("project/tablemod")
                 ProjectProperties &= "Table Model: " & n.Attributes("name").InnerText & eol
             Next
+            ProjectProperties &= "## Recognition Profiles" & eol & RecogProfiles() & eol
+            ProjectProperties &= "## Script Variables" & eol & ScriptVariables() & eol
+        End Get
+    End Property
 
-            For Each n As Xml.XmlNode In XML.SelectNodes("RecogProfile")
-                ProjectProperties &= IIf(n.Attributes("Type").InnerText = "1", "page", "zonal") & " recognition profile : " &
-                n.Attributes("Name").InnerText & " : " & n.Attributes("Class").InnerText & eol
+    Private ReadOnly Property RecogProfiles() As String
+        Get
+            Dim Profiles As Xml.XmlNode = XML.SelectSingleNode("/project/RecogProfiles")
+            Dim DefOMR As String = Profiles.Attributes("DefZrOmr").InnerText
+            Dim DefOCR As String = Profiles.Attributes("DefZrOcr").InnerText
+            Dim DefPage As String = Profiles.Attributes("DefPr").InnerText
+            RecogProfiles = ""
+            For Each n As Xml.XmlNode In XML.SelectNodes("//RecogProfile")
+                RecogProfiles &= IIf(n.Attributes("Type").InnerText = "1", "page", "zonal") & " recognition profile : " & n.Attributes("Name").InnerText
+                Dim GUID As String = n.Attributes("guid").InnerText
+                If GUID = DefOMR Or GUID = DefOCR Or GUID = DefPage Then RecogProfiles &= "*"
+                RecogProfiles &= eol
             Next
         End Get
     End Property
+
+    Private ReadOnly Property ScriptVariables() As String
+        Get
+            ScriptVariables = ""
+            Dim vars As New Xml.XmlDocument
+            vars.Load(FileName.Replace(".fpr", "_ScriptVariables.xml"))
+            For Each var As Xml.XmlNode In vars.SelectNodes("//var")
+                Dim key As String = var.Attributes("key").InnerText
+                Dim value As String = var.Attributes("value").InnerText
+                If key.ToLower.Contains("key") Or key.ToLower.Contains("token") Then
+                    value = "*****"  'obscure sensitive data
+                End If
+                ScriptVariables &= String.Format("* **{0}** : {1}" & eol, key, value)
+            Next
+        End Get
+    End Property
+
     Private ReadOnly Property Fields(cl As Xml.XmlNode) As String
         Get
-            Fields = "## Fields" & vbCrLf
+            Dim MD As String = ""
             For Each f As Xml.XmlNode In cl.SelectNodes("field")
-                Fields &= Field(f)
+                MD &= Field(f)
             Next
+            If MD = "" Then
+                Return ""
+            Else
+                Fields = "|Group| Field | Locator | SubField | Formatter | Copy Conf|Valid Conf|Min Distance|" & eol
+                Fields &= "|----|-------|---------|----------|-----------|----------|----------|------------|" & eol
+                Fields &= MD
+            End If
         End Get
     End Property
     Private ReadOnly Property Field(f As Xml.XmlNode) As String
         Get
-            Field = "* " & f.Attributes("name").InnerText
+            Dim groupName As String = f.Attributes("gname").InnerText
+            Dim name As String = f.Attributes("name").InnerText
             Dim loc As String = f.Attributes("locator").InnerText
-            If loc <> "" Then Field &= String.Format(" *{0}*", loc)
             Dim sf As String = f.Attributes("locsubf").InnerText
-            If sf <> "" Then Field &= String.Format(":*{0}*", sf)
-            Field &= eol
+            Dim formatter As String = f.Attributes("fldfrmt").InnerText
+            Dim confidence As String = Percent(Attribute(f, "conf", "0.80"))
+            Dim distance As String = Percent(Attribute(f, "dist", "0.10"))
+            Dim confidencecpy As String = Percent(Attribute(f, "confcpy", "0.10"))
+            Field = String.Format("|{0}|{1}|{2}|{3}|{4}|{5}|{6}|{7}|" & eol, groupName, name, loc, sf, formatter, confidencecpy, confidence, distance)
         End Get
     End Property
+
+    Private Function Percent(p As String) As String
+        Return FormatPercent(Double.Parse(p), 0)
+    End Function
 
     Private ReadOnly Property Locators(cl As Xml.XmlNode) As String
         Get
@@ -88,11 +141,14 @@
                 If loc.Attributes("script").InnerText = "1" Then locType = "Script Locator [[Script](#Script)]"
             End If
             Locator &= "*" & locType & "*" & eol
-            Dim subfieldcount As Long = Long.Parse(loc.Attributes("sfcount").InnerText)
-            If subfieldcount > 0 Then
-                For sf = 0 To subfieldcount - 1
-                    Locator &= "  * " & loc.Attributes("sbfld" & sf.ToString).InnerText & eol
-                Next
+            If loc.Attributes("sfcount") IsNot Nothing Then
+                Dim subfieldcount As Long = Long.Parse(loc.Attributes("sfcount").InnerText)
+                If subfieldcount > 0 Then
+                    For sf = 0 To subfieldcount - 1
+                        Locator &= "    * " & loc.Attributes("sbfld" & sf.ToString).InnerText & eol
+                    Next
+                End If
+
             End If
         End Get
     End Property
@@ -106,24 +162,23 @@
 
     Public ReadOnly Property MarkDown(cl As Xml.XmlNode) As String
         Get
-            Dim Labels As String = "Fields Locators Script"
-            Const ProjectLabels As String = "Fields Locators Formatters Databases Dictionaries Tables Script"
+            Dim Labels As String = "Fields Locators"
+            Const ProjectLabels As String = "Fields Locators Formatters Databases Dictionaries Tables Recognition-Profiles Script-Variables"
             MarkDown = ""
             If IsProjectClass(cl) Then
                 MarkDown = "# Kofax Transformation Auto-documentation" & vbCrLf
                 MarkDown &= "*created by [KT markdown](https://github.com/KofaxRTransformation/KT_markdown#kt_markdown)*  " & vbCrLf
-                MarkDown &= "project version= " & Attribute("/project", "version") & vbCrLf
+                MarkDown &= "project version= " & XML.SelectSingleNode("/project").Attributes("version").InnerText & vbCrLf
             End If
             MarkDown &= "# Class: " & ClassName(cl) & vbCrLf
             If IsProjectClass(cl) Then Labels = ProjectLabels
             For Each label As String In Split(Labels)
-                MarkDown &= String.Format("[[{0}](#{0})] ", label)
+                MarkDown &= String.Format("[[{0}](#{1})] ", label.Replace("-", " "), label)
             Next
-            MarkDown &= eol
+            MarkDown &= String.Format(" [[Script]({0}.vb)]" & eol, ClassName(cl))
             MarkDown &= Fields(cl)
             MarkDown &= Locators(cl)
             If IsProjectClass(cl) Then MarkDown &= ProjectProperties
-            MarkDown &= Script(cl)
         End Get
     End Property
     Public ReadOnly Property IsProjectClass(cl As Xml.XmlNode) As Boolean
