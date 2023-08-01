@@ -20,14 +20,21 @@ Public Class MarkDown
     Private Sub WriteFileIfChanged(FileName As String, Content As String)
         'Only write file if new or content changed
         Files.Add(FileName)
-        If File.Exists(FileName) AndAlso File.ReadAllText(FileName) = Content Then Exit Sub
+        If File.Exists(FileName) AndAlso File.ReadAllText(FileName) = Content Then
+            Console.WriteLine("skipped " & FileName)
+            Exit Sub
+        End If
         File.WriteAllText(FileName, Content)
+        Console.WriteLine("wrote   " & FileName)
     End Sub
 
     Private Sub DeleteUnneededFiles(Folder As String)
         'This deletes files from classes that no longer exist in project
         For Each f As String In Directory.GetFiles(Folder)
-            If Not Files.Contains(f) Then File.Delete(f)
+            If Not Files.Contains(f) Then
+                File.Delete(f)
+                Console.WriteLine("removed " & f)
+            End If
         Next
     End Sub
 End Class
