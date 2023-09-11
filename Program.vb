@@ -6,7 +6,8 @@ Module Program
     Private HelpText As String = "\nKT_Markdown.exe [fprFileName] [subfolderName]\n If [fprFileName] is missing then look in current folder.\n If [subFolderName] is missing then output to folder 'md'."
     Sub Main(args As String())
         Dim fprFilename As String = ""
-        Console.WriteLine("Kofax Transformation Markdown Version 1.0.3")
+        Dim V As String = FileVersionInfo.GetVersionInfo(System.Diagnostics.Process.GetCurrentProcess().MainModule.FileName).FileVersion()
+        Console.WriteLine("Kofax Transformation Markdown Version " & V)
         Console.WriteLine("https://github.com/KofaxTransformation/KT_Markdown")
         'Dim Dir As New DirectoryInfo(System.IO.Path.GetDirectoryName(Reflection.Assembly.GetEntryAssembly().Location))
         Dim Dir As New DirectoryInfo(Directory.GetCurrentDirectory)
@@ -32,7 +33,7 @@ Module Program
             Console.WriteLine("Cannot find " & fprFilename & HelpText)
             Exit Sub
         End If
-        Console.WriteLine("dir    " & MarkDownFolder)
+        Console.WriteLine("dir     " & MarkDownFolder)
         Console.WriteLine("using   " + fprFilename)
         Dim xdoc As New XDoc(fprFilename)
         Dim MarkDown As New MarkDown(xdoc)

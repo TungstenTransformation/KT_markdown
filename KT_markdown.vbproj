@@ -4,10 +4,23 @@
     <OutputType>Exe</OutputType>
     <RootNamespace>KT_markdown</RootNamespace>
     <TargetFramework>net7.0-windows</TargetFramework>
+    <Version>1.0.4</Version>
+    <Authors>David.Wright@kofax.com</Authors>
+    <Title>Kofax Transformation Markdown</Title>
+    <projectURL>https://github.com/KofaxTransformation/KT_markdown</projectURL>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <RepositoryUrl>https://github.com/kofaxTransformation/KT_Markdown</RepositoryUrl>
   </PropertyGroup>
 
   <ItemGroup>
     <Compile Remove="XDocument.vb" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="README.md">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
   </ItemGroup>
 
 </Project>

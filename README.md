@@ -24,7 +24,16 @@ Compatible with KTM, KTA and RPA.
 ```batch
 KT_markdown.exe c:\temp\ktproject\
 ```
+
+## Compilation
+To compile into a standalone executable without any dlls do the following.
+* Meun **Build/Publish Section**.
+* Click **Publish**.
+* The version number increments itself.
+
 Both parameters are optional. It works out what you mean.  
+## 1.0.4 (11 Sep 2023)
+* ScriptVariables.xml file is optional
 ## 1.0.3 (1 Aug 2023)
 * Fixed project scripts.
 * improved console logging.
