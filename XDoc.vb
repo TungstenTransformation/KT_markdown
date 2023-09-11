@@ -75,8 +75,10 @@
     Private ReadOnly Property ScriptVariables() As String
         Get
             ScriptVariables = ""
+            Dim ScriptVarFileName As String = FileName.Replace(".fpr", "_ScriptVariables.xml")
+            If Not IO.File.Exists(ScriptVarFileName) Then Exit Property
             Dim vars As New Xml.XmlDocument
-            vars.Load(FileName.Replace(".fpr", "_ScriptVariables.xml"))
+            vars.Load(ScriptVarFileName)
             For Each var As Xml.XmlNode In vars.SelectNodes("//var")
                 Dim key As String = var.Attributes("key").InnerText
                 Dim value As String = var.Attributes("value").InnerText
